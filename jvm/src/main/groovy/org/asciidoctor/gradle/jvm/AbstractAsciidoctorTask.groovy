@@ -93,7 +93,6 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
     public final static Severity WARN = Severity.WARN
     public final static Severity INFO = Severity.INFO
 
-    protected final AsciidoctorJExtension asciidoctorj
     private ExecutionMode inProcess
     private Severity failureLevel = Severity.FATAL
     private final List<Object> asciidocConfigurations = []
