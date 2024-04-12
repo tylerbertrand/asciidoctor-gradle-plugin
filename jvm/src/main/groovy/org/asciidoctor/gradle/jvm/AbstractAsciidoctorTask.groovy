@@ -38,10 +38,12 @@ import org.asciidoctor.gradle.internal.ExecutorUtils
 import org.asciidoctor.gradle.internal.JavaExecUtils
 import org.asciidoctor.gradle.remote.AsciidoctorJavaExec
 import org.gradle.api.Action
+import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.FileCollection
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Classpath
@@ -102,6 +104,9 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
     private final Function<List<Dependency>, Configuration> detachedConfigurationCreator
     private final Property<FileCollection> jvmClasspath
     private final List<Provider<File>> gemJarProviders = []
+
+    private final MapProperty<String, Object> optionsProperty = project.objects.mapProperty(String, Object)
+    private final MapProperty<String, Object> attributesProperty = project.objects.mapProperty(String, Object)
 
     @Delegate
     private final DefaultAsciidoctorFileOperations asciidoctorTaskFileOperations
@@ -221,7 +226,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
      */
     @Input
     Map<String, Object> getOptions() {
-        resolveAsCacheable(asciidoctorj.options, projectOperations)
+        resolveAsCacheable(optionsProperty.get(), projectOperations)
     }
 
     /** Apply a new set of Asciidoctor options, clearing any options previously set.
@@ -233,7 +238,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
      * @param m Map with new options
      */
     void setOptions(Map m) {
-        asciidoctorj.options = m
+        optionsProperty.set(m)
     }
 
     /** Add additional asciidoctor options
@@ -245,7 +250,14 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
      * @param m Map with new options
      */
     void options(Map m) {
-        asciidoctorj.options(m)
+        checkForAttributesInOptions(m)
+        this.optionsProperty.get().putAll(m)
+    }
+
+    private void checkForAttributesInOptions(Map m) {
+        if (m.containsKey('attributes')) {
+            throw new GradleException('Attributes found in options. Please use \'attributes\' method')
+        }
     }
 
     /** Returns all of the Asciidoctor options.
@@ -255,7 +267,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
      */
     @Input
     Map<String, Object> getAttributes() {
-        resolveAsCacheable(asciidoctorj.attributes, projectOperations)
+        resolveAsCacheable(attributesProperty.get(), projectOperations)
     }
 
     /** Apply a new set of Asciidoctor options, clearing any options previously set.
@@ -267,7 +279,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
      * @param m Map with new options
      */
     void setAttributes(Map m) {
-        asciidoctorj.attributes = m
+        attributesProperty.set(m)
     }
 
     /** Add additional asciidoctor options
@@ -279,7 +291,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
      * @param m Map with new options
      */
     void attributes(Map m) {
-        asciidoctorj.attributes(m)
+        attributesProperty.get().putAll(m)
     }
 
     /** Additional providers of attributes.
@@ -466,7 +478,11 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
                 asciidoctorTaskFileOperations
         )
         this.baseDirConfiguration = new DefaultAsciidoctorBaseDirConfiguration(project, this)
-        this.asciidoctorj = extensions.create(AsciidoctorJExtension.NAME, AsciidoctorJExtension, this)
+
+        def asciidoctorj = extensions.create(AsciidoctorJExtension.NAME, AsciidoctorJExtension, this)
+        this.optionsProperty.set(asciidoctorj.options)
+        this.attributesProperty.set(asciidoctorj.attributes)
+
         this.projectDir = project.projectDir
         this.rootDir = project.rootDir
         this.jvmClasspath = project.objects.property(FileCollection)
@@ -478,7 +494,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
             cfg
         }.curry(project.configurations) as Function<List<Dependency>, Configuration>
 
-        inputs.files(this.asciidoctorj.configuration)
+        inputs.files(asciidoctorj.configuration)
         inputs.files { gemJarProviders }.withPathSensitivity(RELATIVE)
         inputs.property 'backends', { -> backends() }
         inputs.property 'asciidoctorj-version', { -> asciidoctorj.version }
