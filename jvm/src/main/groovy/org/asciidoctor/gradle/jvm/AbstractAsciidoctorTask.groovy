@@ -519,12 +519,13 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
 
         def asciidoctorj = extensions.create(AsciidoctorJExtension.NAME, AsciidoctorJExtension, this)
         this.optionsProperty.set(asciidoctorj.options)
+        this.safeModeProperty.set(asciidoctorj.getSafeMode())
         this.attributesProperty.set(asciidoctorj.attributes)
         this.attributeProviderProperty.set(asciidoctorj.attributeProviders)
         this.configurationsFileCollection = getConfigurations(asciidoctorj)
         this.fatalWarningsProperty.set(asciidoctorj.fatalWarnings)
         this.requiresProperty.set(asciidoctorj.requires)
-        this.logLevelProperty.set(asciidoctorj.logLevel)
+        this.logLevelProperty.set(asciidoctorj.getLogLevel() != null ? asciidoctorj.getLogLevel() : LogLevel.INFO)
         this.docExtensionsProperty.set(asciidoctorj.docExtensions)
 
         this.projectDir = project.projectDir
