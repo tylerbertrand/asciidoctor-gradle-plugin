@@ -57,7 +57,6 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.process.JavaForkOptions
 import org.gradle.workers.WorkerExecutor
-import org.jcodings.util.Hash
 import org.ysb33r.grolifant.api.core.LegacyLevel
 import org.ysb33r.grolifant.api.core.jvm.ExecutionMode
 import org.ysb33r.grolifant.api.core.jvm.JavaForkOptionsWithEnvProvider
@@ -342,7 +341,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
      */
     @Internal
     List<AsciidoctorAttributeProvider> getAttributeProviders() {
-        attributeProviderProperty.get()
+        attributeProviderProperty.get().stream().collect(Collectors.toList())
     }
 
     /** Returns all of the specified configurations as a collections of files.
@@ -539,8 +538,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
             cfg
         }.curry(project.configurations) as Function<List<Dependency>, Configuration>
 
-        inputs.files(asciidoctorj.configuration)
-//        inputs.files { gemJarProviders }.withPathSensitivity(RELATIVE)
+        inputs.files { gemJarProviders }.withPathSensitivity(RELATIVE)
         inputs.property 'backends', { -> backends() }
         inputs.property 'asciidoctorj-version', { -> asciidoctorj.version }
         inputs.property 'jruby-version', { -> asciidoctorj.jrubyVersion ?: '' }
@@ -645,9 +643,9 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
                 ),
                 backendName: backendName,
                 logDocuments: logDocuments,
-                fatalMessagePatterns: fatalWarningsProperty.get(),
+                fatalMessagePatterns: fatalWarningsProperty.get().stream().collect(Collectors.toList()),
                 asciidoctorExtensions: serializableAsciidoctorJExtensions,
-                requires: requiresProperty.get(),
+                requires: requiresProperty.get().stream().collect(Collectors.toList()),
                 copyResources: copyResources.present &&
                         (copyResources.get().empty || backendName in copyResources.get()),
                 executorLogLevel: ExecutorUtils.getExecutorLogLevel(logLevelProperty.get()),
@@ -661,7 +659,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
      */
     @Internal
     protected List<Object> getAsciidoctorJExtensions() {
-        docExtensionsProperty.get()
+        docExtensionsProperty.get().stream().collect(Collectors.toList())
     }
 
     @Nested
