@@ -106,7 +106,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
     private final File rootDir
     private final File projectDir
     private final File execConfigurationDataFile
-    private final Function<List<Dependency>, Configuration> detachedConfigurationCreator
+//    private final Function<List<Dependency>, Configuration> detachedConfigurationCreator
     private final Property<FileCollection> jvmClasspath
     private final List<Provider<File>> gemJarProviders = []
 
@@ -130,9 +130,18 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
         List<Dependency> deps = this.docExtensionsProperty.get().findAll {
             it instanceof Dependency
         } as List<Dependency>
+
+        def detachedConfigurationCreator = { ConfigurationContainer c, List<Dependency> d ->
+            final cfg = c.detachedConfiguration(d.toArray() as Dependency[])
+            cfg.canBeConsumed = false
+            cfg.canBeResolved = true
+            cfg
+        }.curry(project.configurations) as Function<List<Dependency>, Configuration>
+
         Configuration cfg = detachedConfigurationCreator.apply(deps)
         getAsciidoctorJExtension().loadJRubyResolutionStrategy(cfg)
-    }
+        cfg
+    } as Provider<FileCollection>
 
     private final Provider<Map<String, Map<String, Object>>> attributesByLangProvider = project.provider {
         def attributesByLang = new HashMap<String, Map<String, Object>>()
@@ -531,12 +540,12 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
         this.rootDir = project.rootDir
         this.jvmClasspath = project.objects.property(FileCollection)
         this.execConfigurationDataFile = getExecConfigurationDataFile(this)
-        this.detachedConfigurationCreator = { ConfigurationContainer c, List<Dependency> deps ->
-            final cfg = c.detachedConfiguration(deps.toArray() as Dependency[])
-            cfg.canBeConsumed = false
-            cfg.canBeResolved = true
-            cfg
-        }.curry(project.configurations) as Function<List<Dependency>, Configuration>
+//        this.detachedConfigurationCreator = { ConfigurationContainer c, List<Dependency> deps ->
+//            final cfg = c.detachedConfiguration(deps.toArray() as Dependency[])
+//            cfg.canBeConsumed = false
+//            cfg.canBeResolved = true
+//            cfg
+//        }.curry(project.configurations) as Function<List<Dependency>, Configuration>
 
         inputs.files { gemJarProviders }.withPathSensitivity(RELATIVE)
         inputs.property 'backends', { -> backends() }
@@ -819,7 +828,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
         prepareAttributes(
                 projectOperations.stringTools,
                 attributes,
-                (lang.present ? attributesByLangProvider.get().getOrDefault(lang.get(), [:]) : [:]), // THIS IS NULL
+                (lang.present ? attributesByLangProvider.get().getOrDefault(lang.get(), [:]) : [:]),
                 getTaskSpecificDefaultAttributes(workingSourceDir) as Map<String, ?>,
                 attributeProviders,
                 lang
