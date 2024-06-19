@@ -106,7 +106,6 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
     private final File rootDir
     private final File projectDir
     private final File execConfigurationDataFile
-//    private final Function<List<Dependency>, Configuration> detachedConfigurationCreator
     private final Property<FileCollection> jvmClasspath
     private final List<Provider<File>> gemJarProviders = []
 
