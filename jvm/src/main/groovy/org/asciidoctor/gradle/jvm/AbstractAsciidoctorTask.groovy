@@ -401,7 +401,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
      */
     @Override
     Set<Configuration> getReportableConfigurations() {
-        (/*[asciidoctorj.configuration] +*/ projectOperations.configurations.asConfigurations(asciidocConfigurations))
+        ([getAsciidoctorJExtension().configuration] + projectOperations.configurations.asConfigurations(asciidocConfigurations))
                 .toSet()
     }
 
