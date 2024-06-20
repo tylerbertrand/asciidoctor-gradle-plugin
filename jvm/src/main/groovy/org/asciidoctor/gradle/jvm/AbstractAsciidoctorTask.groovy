@@ -49,7 +49,6 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
@@ -112,7 +111,6 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
     protected final MapProperty<String, Object> optionsProperty = project.objects.mapProperty(String, Object)
     protected final MapProperty<String, Object> attributesProperty = project.objects.mapProperty(String, Object)
     public final ListProperty<AsciidoctorAttributeProvider> attributeProviderProperty = project.objects.listProperty(AsciidoctorAttributeProvider)
-    @Classpath
     protected FileCollection configurationsFileCollection
     protected final ListProperty<Pattern> fatalWarningsProperty = project.objects.listProperty(Pattern)
     protected final ListProperty<String> requiresProperty = project.objects.listProperty(String)
