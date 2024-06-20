@@ -814,13 +814,6 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
         }
     }
 
-    // TODO: Try to do this without a detached configuration
-//    private FileCollection jrubyLessConfiguration(List<Dependency> deps) {
-//        Configuration cfg = detachedConfigurationCreator.apply(deps)
-//        asciidoctorj.loadJRubyResolutionStrategy(cfg)
-//        cfg
-//    }
-
     private Map<String, Object> preparePreserialisedAttributes(final File workingSourceDir, Optional<String> lang) {
         prepareAttributes(
                 projectOperations.stringTools,
