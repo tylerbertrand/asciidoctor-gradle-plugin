@@ -110,18 +110,14 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
 
     protected final MapProperty<String, Object> optionsProperty = project.objects.mapProperty(String, Object)
     protected final MapProperty<String, Object> attributesProperty = project.objects.mapProperty(String, Object)
-    protected final ListProperty<AsciidoctorAttributeProvider> attributeProviderProperty = project.objects.listProperty(AsciidoctorAttributeProvider)
+    protected final ListProperty<AsciidoctorAttributeProvider> attributeProviderProperty = project.objects
+            .listProperty(AsciidoctorAttributeProvider)
     protected FileCollection configurationsFileCollection
     protected final ListProperty<Pattern> fatalWarningsProperty = project.objects.listProperty(Pattern)
     protected final ListProperty<String> requiresProperty = project.objects.listProperty(String)
     protected final Property<LogLevel> logLevelProperty = project.objects.property(LogLevel)
     protected final Property<SafeMode> safeModeProperty = project.objects.property(SafeMode)
     protected final ListProperty<Object> docExtensionsProperty = project.objects.listProperty(Object)
-
-    @Internal
-    private AsciidoctorJExtension getAsciidoctorJExtension() {
-        extensions.getByName(AsciidoctorJExtension.NAME) as AsciidoctorJExtension
-    }
 
     private final Provider<FileCollection> jrubyLessDependenciesProvider = project.provider {
         List<Dependency> deps = this.docExtensionsProperty.get().findAll {
@@ -136,20 +132,19 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
         }.curry(project.configurations) as Function<List<Dependency>, Configuration>
 
         Configuration cfg = detachedConfigurationCreator.apply(deps)
-        getAsciidoctorJExtension().loadJRubyResolutionStrategy(cfg)
+        asciidoctorJExtension.loadJRubyResolutionStrategy(cfg)
         cfg
     } as Provider<FileCollection>
 
     private final Provider<Map<String, Map<String, Object>>> attributesByLangProvider = project.provider {
-        def attributesByLang = new HashMap<String, Map<String, Object>>()
+        def attributesByLang = [:]
         languagesAsOptionals.each { lang ->
-            if (lang.isPresent()) {
-                attributesByLang.put(lang.get(), getAsciidoctorJExtension().getAttributesForLang(lang.get()))
+            if (lang.present) {
+                attributesByLang.put(lang.get(), asciidoctorJExtension.getAttributesForLang(lang.get()))
             }
         }
         attributesByLang
     } as Provider<Map<String, Map<String, Object>>>
-
 
     @Delegate
     private final DefaultAsciidoctorFileOperations asciidoctorTaskFileOperations
@@ -297,12 +292,6 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
         this.optionsProperty.get().putAll(m)
     }
 
-    private void checkForAttributesInOptions(Map m) {
-        if (m.containsKey('attributes')) {
-            throw new GradleException('Attributes found in options. Please use \'attributes\' method')
-        }
-    }
-
     /** Returns all of the Asciidoctor options.
      *
      * This is equivalent of using {@code asciidoctorj.getAttributes}
@@ -401,8 +390,8 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
      */
     @Override
     Set<Configuration> getReportableConfigurations() {
-        ([getAsciidoctorJExtension().configuration] + projectOperations.configurations.asConfigurations(asciidocConfigurations))
-                .toSet()
+        ([asciidoctorJExtension.configuration] + projectOperations.configurations
+                .asConfigurations(asciidocConfigurations)).toSet()
     }
 
     /**
@@ -523,13 +512,13 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
 
         def asciidoctorj = extensions.create(AsciidoctorJExtension.NAME, AsciidoctorJExtension, this)
         this.optionsProperty.set(asciidoctorj.options)
-        this.safeModeProperty.set(asciidoctorj.getSafeMode())
+        this.safeModeProperty.set(asciidoctorj.safeMode)
         this.attributesProperty.set(asciidoctorj.attributes)
         this.attributeProviderProperty.set(asciidoctorj.attributeProviders)
         this.configurationsFileCollection = getConfigurations(asciidoctorj)
         this.fatalWarningsProperty.set(asciidoctorj.fatalWarnings)
         this.requiresProperty.set(asciidoctorj.requires)
-        this.logLevelProperty.set(asciidoctorj.getLogLevel() != null ? asciidoctorj.getLogLevel() : LogLevel.INFO)
+        this.logLevelProperty.set(asciidoctorj.logLevel != null ? asciidoctorj.logLevel : LogLevel.INFO)
         this.docExtensionsProperty.set(asciidoctorj.docExtensions)
 
         this.projectDir = project.projectDir
@@ -691,6 +680,17 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
         }
     }
 
+    @Internal
+    private AsciidoctorJExtension getAsciidoctorJExtension() {
+        extensions.getByName(AsciidoctorJExtension.NAME) as AsciidoctorJExtension
+    }
+
+    private void checkForAttributesInOptions(Map m) {
+        if (m.containsKey('attributes')) {
+            throw new GradleException('Attributes found in options. Please use \'attributes\' method')
+        }
+    }
+
     private List<Object> getSerializableAsciidoctorJExtensions() {
         asciidoctorJExtensions.findAll { !(it instanceof Dependency) }.collect {
             getSerializableAsciidoctorJExtension(it)
@@ -788,7 +788,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
         // Jumping through hoops to make docExtensions based upon closures to work.
         closurePaths.add(getClassLocation(org.gradle.internal.scripts.ScriptOrigin))
         if (LegacyLevel.PRE_8_4 && !LegacyLevel.PRE_7_6) {
-            closurePaths.add(getClassLocation(org.gradle.api.GradleException))
+            closurePaths.add(getClassLocation(GradleException))
         }
         if (LegacyLevel.PRE_8_4 && !LegacyLevel.PRE_8_3) {
             closurePaths.add(getInternalGradleLibraryLocation(
