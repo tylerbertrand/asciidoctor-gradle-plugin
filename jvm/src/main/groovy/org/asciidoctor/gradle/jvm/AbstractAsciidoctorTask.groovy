@@ -334,8 +334,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
      * @param m Map with new options
      */
     void attributes(Map m) {
-        attributesProperty.set(attributesProperty.get() + m)
-
+        attributesProperty.putAll(m)
     }
 
     /** Additional providers of attributes.
@@ -537,12 +536,6 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
         this.rootDir = project.rootDir
         this.jvmClasspath = project.objects.property(FileCollection)
         this.execConfigurationDataFile = getExecConfigurationDataFile(this)
-//        this.detachedConfigurationCreator = { ConfigurationContainer c, List<Dependency> deps ->
-//            final cfg = c.detachedConfiguration(deps.toArray() as Dependency[])
-//            cfg.canBeConsumed = false
-//            cfg.canBeResolved = true
-//            cfg
-//        }.curry(project.configurations) as Function<List<Dependency>, Configuration>
 
         inputs.files { gemJarProviders }.withPathSensitivity(RELATIVE)
         inputs.property 'backends', { -> backends() }
