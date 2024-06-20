@@ -110,7 +110,7 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
 
     protected final MapProperty<String, Object> optionsProperty = project.objects.mapProperty(String, Object)
     protected final MapProperty<String, Object> attributesProperty = project.objects.mapProperty(String, Object)
-    public final ListProperty<AsciidoctorAttributeProvider> attributeProviderProperty = project.objects.listProperty(AsciidoctorAttributeProvider)
+    protected final ListProperty<AsciidoctorAttributeProvider> attributeProviderProperty = project.objects.listProperty(AsciidoctorAttributeProvider)
     protected FileCollection configurationsFileCollection
     protected final ListProperty<Pattern> fatalWarningsProperty = project.objects.listProperty(Pattern)
     protected final ListProperty<String> requiresProperty = project.objects.listProperty(String)
