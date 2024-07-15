@@ -108,16 +108,16 @@ class AbstractAsciidoctorTask extends AbstractJvmModelExecTask<AsciidoctorJvmExe
     private final Property<FileCollection> jvmClasspath
     private final List<Provider<File>> gemJarProviders = []
 
-    protected final MapProperty<String, Object> optionsProperty = project.objects.mapProperty(String, Object)
-    protected final MapProperty<String, Object> attributesProperty = project.objects.mapProperty(String, Object)
-    protected final ListProperty<AsciidoctorAttributeProvider> attributeProviderProperty = project.objects
+    private final MapProperty<String, Object> optionsProperty = project.objects.mapProperty(String, Object)
+    private final MapProperty<String, Object> attributesProperty = project.objects.mapProperty(String, Object)
+    private final ListProperty<AsciidoctorAttributeProvider> attributeProviderProperty = project.objects
             .listProperty(AsciidoctorAttributeProvider)
-    protected FileCollection configurationsFileCollection
-    protected final ListProperty<Pattern> fatalWarningsProperty = project.objects.listProperty(Pattern)
-    protected final ListProperty<String> requiresProperty = project.objects.listProperty(String)
-    protected final Property<LogLevel> logLevelProperty = project.objects.property(LogLevel)
-    protected final Property<SafeMode> safeModeProperty = project.objects.property(SafeMode)
-    protected final ListProperty<Object> docExtensionsProperty = project.objects.listProperty(Object)
+    private FileCollection configurationsFileCollection
+    private final ListProperty<Pattern> fatalWarningsProperty = project.objects.listProperty(Pattern)
+    private final ListProperty<String> requiresProperty = project.objects.listProperty(String)
+    private final Property<LogLevel> logLevelProperty = project.objects.property(LogLevel)
+    private final Property<SafeMode> safeModeProperty = project.objects.property(SafeMode)
+    private final ListProperty<Object> docExtensionsProperty = project.objects.listProperty(Object)
 
     private final Provider<FileCollection> jrubyLessDependenciesProvider = project.provider {
         List<Dependency> deps = this.docExtensionsProperty.get().findAll {
